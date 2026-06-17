@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>十八中学2026届毕业生</title>
+    <style>
+        :root {
+            --red-main: #d92121;
+            --blue-main: #195fd8;
+            --gray-text: #777777;
+            --spacing: 30px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei",sans-serif;
+        }
+        /* 背景轮播容器：固定全屏，层级最低 */
+        .page-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        /* 背景图片样式：默认50%透明度，过渡动画 */
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-position: center;
+            background-size: cover;
+            background-repeat: no-repeat;
+            opacity: 0.5; /* 默认50%透明度 */
+            transition: opacity 4s ease; /* 4秒过渡动画 */
+        }
+        /* 隐藏状态：100%透明 */
+        .bg-image.hidden {
+            opacity: 1; /* 修正：100%不透明是1，0是完全透明，这里按需求调整为1（无淡化），0.5是50%淡化，0是100%淡化 */
+            /* 注：按需求描述调整：淡化50% = opacity:0.5，淡化100% = opacity:0 */
+            opacity: 0; /* 100%淡化（完全透明） */
+        }
+        /* 核心修复：body取消relative，避免创建层级上下文干扰z-index */
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh; /* 确保body占满视口 */
+        }
+        /* 给内容容器单独加定位，避免影响全局 */
+        .content-wrapper {
+            position: relative;
+            z-index: 1; /* 明确内容层级高于背景 */
+        }
+        .title-top {
+            font-size: 60px;
+            color: var(--red-main);
+            text-align: center;
+            font-weight: bold;
+            margin: var(--spacing) 0;
+        }
+        .container-box {
+            margin: 40px 0;
+        }
+        .item-block {
+            background: #ffffff;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            position:relative;
+            z-index:1; /* 仅相对于父容器，无需过高 */
+        }
+        .item-name{
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        video {
+            width: 100%;
+            max-width: 700px;
+            display: block;
+        }
+        .img-item{
+            width: 100%;
+            max-width: 450px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        /*图片全屏弹窗*/
+        #fullScreenImg {
+            display: none;
+            position: fixed;
+            inset:0;
+            background: rgba(0,0,0,0.95);
+            z-index: 999999;
+            justify-content: center;
+            align-items: center;
+        }
+        #fullScreenImg img {
+            max-width: 95%;
+            max-height: 95%;
+        }
+        .download-box{
+            margin: 40px 0;
+            text-align: center;
+        }
+        #downloadBtn{
+            padding: 14px 32px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background: #e63939;
+            color: #fff;
+            border-radius: 6px;
+        }
+        .download-tip{
+            margin-top: 18px;
+            font-size: 16px;
+            display: none;
+        }
+        .link-click{
+            color: #0066cc;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .bottom-blue-title{
+            font-size: 60px;
+            color: var(--blue-main);
+            text-align: center;
+            font-weight: bold;
+            margin: var(--spacing) 0;
+        }
+        .tech-info{
+            color: var(--gray-text);
+            font-size: 14px;
+            text-align: center;
+            margin-top: 40px;
+            line-height: 2;
+        }
+        /*右上角音乐控件*/
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #222;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index:99999;
+        }
+        .music-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .volume-slider {
+            width: 80px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景轮播容器 -->
+    <div class="page-bg-container" id="bgContainer"></div>
+
+    <!-- 核心修复：所有内容包裹在独立容器中，明确层级 -->
+    <div class="content-wrapper">
+        <!--背景音乐-->
+        <audio id="bgMusic" loop preload="auto">
+            <source src="./img/video/music.mp3" type="audio/mpeg">
+        </audio>
+        
+        <!--音乐+音量调节-->
+        <div class="music-control">
+            <button id="musicCtrl" class="music-btn">暂停音乐</button>
+            <input type="range" id="volume" class="volume-slider" min="0" max="1" step="0.01" value="1">
+        </div>
+        
+        <!--图片全屏遮罩-->
+        <div id="fullScreenImg">
+            <img id="fullImg" src="">
+        </div>
+
+        <header>
+            <h1 class="title-top">十八中学 2026届毕业生</h1>
+        </header>
+        <main class="container-box">
+            <div class="item-block">
+                <div class="item-name">测试视频一</div>
+                <video class="video-item" controls preload="metadata">
+                    <source src="./img/video/video1.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试视频二</div>
+                <video class="video-item" controls preload="metadata">
+                    <source src="./img/video/video2.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试照片一</div>
+                <img class="img-item" src="./img/photo/photo1.jpg" onclick="openFull(this.src)">
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试照片二</div>
+                <img class="img-item" src="./img/photo/photo2.jpg" onclick="openFull(this.src)">
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试照片三</div>
+                <img class="img-item" src="./img/photo/photo3.jpg" onclick="openFull(this.src)">
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试照片四</div>
+                <img class="img-item" src="./img/photo/photo4.jpg" onclick="openFull(this.src)">
+            </div>
+            <div class="item-block">
+                <div class="item-name">测试照片五</div>
+                <img class="img-item" src="./img/photo/photo5.jpg" onclick="openFull(this.src)">
+            </div>
+        </main>
+        <section class="download-box">
+            <button id="downloadBtn">下载文件</button>
+            <div class="download-tip" id="tipBox">
+                如果下载未开始，请：<br>
+                右键点击<span class="link-click" id="rightClickText">这里</span>，选择"另存为"<br>
+                或直接访问：<a href="https://memory18-2026.netlify.app/img/memory.zip">https://memory18-2026.netlify.app/img/memory.zip</a>
+            </div>
+        </section>
+        <div class="bottom-blue-title">广州市第18中学</div>
+        <footer class="tech-info">
+            技术支持：前端原生HTML+CSS+JS架构｜兼容Chrome、Edge、Firefox全主流浏览器<br>
+            作者：ZPY<br>
+            荣誉出品<br>
+            联系3777425959@qq.com<br>
+            Guangzhou No. 18 Middle School
+        </footer>
+    </div>
+
+<script>
+    // 背景轮播核心逻辑
+    (function() {
+        // 配置项
+        const bgConfig = {
+            imgCount: 10, // 图片数量（1-10）
+            basePath: './img/photo1/', // 新图片文件夹路径
+            showDuration: 15000, // 50%淡化显示时长（15秒）
+            fadeDuration: 4000, // 淡入淡出时长（4秒）
+            initialOpacity: 0.5, // 初始50%淡化
+            hiddenOpacity: 0 // 100%淡化（完全透明）
+        };
+
+        // 创建背景图片元素
+        const bgContainer = document.getElementById('bgContainer');
+        let currentIndex = 0;
+        let bgImages = [];
+
+        // 初始化所有背景图片
+        for (let i = 1; i <= bgConfig.imgCount; i++) {
+            const bgImg = document.createElement('div');
+            bgImg.className = 'bg-image hidden'; // 初始隐藏
+            bgImg.style.backgroundImage = `url(${bgConfig.basePath}photo${i}.jpg)`;
+            bgContainer.appendChild(bgImg);
+            bgImages.push(bgImg);
+        }
+
+        // 切换背景图片的核心函数
+        function switchBackground() {
+            // 隐藏当前图片（4秒内从50%淡化到100%淡化）
+            const currentImg = bgImages[currentIndex];
+            currentImg.style.opacity = bgConfig.hiddenOpacity;
+
+            // 计算下一张索引（循环）
+            currentIndex = (currentIndex + 1) % bgConfig.imgCount;
+            const nextImg = bgImages[currentIndex];
+
+            // 等待当前图片淡出完成后，显示下一张
+            setTimeout(() => {
+                // 重置所有图片状态
+                bgImages.forEach(img => {
+                    img.classList.add('hidden');
+                    img.style.opacity = bgConfig.hiddenOpacity;
+                });
+                // 显示下一张（4秒内从100%淡化到50%淡化）
+                nextImg.classList.remove('hidden');
+                nextImg.style.opacity = bgConfig.initialOpacity;
+
+                // 等待显示时长后，再次切换
+                setTimeout(switchBackground, bgConfig.showDuration);
+            }, bgConfig.fadeDuration);
+        }
+
+        // 页面加载后启动轮播
+        window.addEventListener('load', () => {
+            // 显示第一张图片
+            bgImages[0].classList.remove('hidden');
+            bgImages[0].style.opacity = bgConfig.initialOpacity;
+            // 等待初始显示时长后开始轮播
+            setTimeout(switchBackground, bgConfig.showDuration);
+        });
+    })();
+
+    // 原有音乐控制逻辑
+    const bgAudio = document.getElementById('bgMusic');
+    const musicBtn = document.getElementById('musicCtrl');
+    const volumeSlider = document.getElementById('volume');
+    const allVideos = document.querySelectorAll('.video-item');
+    let isPlay = true;
+    let originVolume = 1;
+    bgAudio.volume = originVolume;
+
+    //音量拖动保存基准音量
+    volumeSlider.addEventListener('input', () => {
+        originVolume = Number(volumeSlider.value);
+        if(!isVideoPlaying) bgAudio.volume = originVolume;
+    })
+    //音乐开关
+    musicBtn.onclick = () => {
+        if(isPlay){bgAudio.pause();musicBtn.innerText="播放音乐";isPlay=false;}
+        else{bgAudio.play();musicBtn.innerText="暂停音乐";isPlay=true;}
+    }
+    //页面加载自动播放
+    window.addEventListener('load',()=>{
+        bgAudio.play().catch(()=>document.body.addEventListener('click',()=>bgAudio.play(),{once:true}))
+    })
+    //视频播放降80%音量，暂停恢复
+    let isVideoPlaying = false;
+    allVideos.forEach(vid=>{
+        vid.addEventListener('play',()=>{isVideoPlaying=true;bgAudio.volume=originVolume*0.2})
+        function resetVol(){
+            let playing = [...allVideos].some(v=>!v.paused);
+            isVideoPlaying=playing;
+            if(!playing) bgAudio.volume=originVolume;
+        }
+        vid.addEventListener('pause',resetVol);
+        vid.addEventListener('ended',resetVol);
+    })
+    //图片全屏
+    const fullScreen = document.getElementById('fullScreenImg');
+    const fullImg = document.getElementById('fullImg');
+    function openFull(src){fullImg.src=src;fullScreen.style.display="flex";}
+    fullScreen.onclick=()=>fullScreen.style.display="none";
+    //下载
+    const downloadBtn = document.getElementById('downloadBtn');
+    const tipBox = document.getElementById('tipBox');
+    const linkText = document.getElementById('rightClickText');
+    const downUrl = "https://memory18-2026.netlify.app/img/memory.zip";
+    downloadBtn.onclick=()=>{tipBox.style.display="block";window.open(downUrl,'_blank')};
+    linkText.onclick=()=>location.href=downUrl;
+</script>
+</body>
+</html>
